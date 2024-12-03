@@ -1,0 +1,760 @@
+<html><head><base href="https://websim.ai/hyper3d-desktop/">
+<title>Quantum Hyper-Advanced 3D Desktop Simulation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/BokehPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/BokehShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/FXAAShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/ConvolutionShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SSAOShader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.18.0/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+<script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+<script src="https://cdn.jsdelivr.net/npm/brain.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gpu.js/2.16.0/gpu-browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.20/lodash.min.js"></script>
+<style>
+  body { margin: 0; overflow: hidden; font-family: 'Quantum', sans-serif; background: #000; }
+  #container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  #loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #00ffff; font-size: 24px; text-shadow: 0 0 10px #00ffff; }
+  #info { position: absolute; bottom: 10px; left: 10px; color: #00ffff; font-size: 14px; text-shadow: 0 0 5px #00ffff; }
+  #evolution-info { position: absolute; top: 10px; right: 10px; color: #00ffff; font-size: 14px; text-align: right; text-shadow: 0 0 5px #00ffff; }
+  #circuit-diagram, #neural-network { position: absolute; bottom: 10px; right: 10px; width: 200px; height: 150px; }
+  #virtual-assistant { position: absolute; top: 10px; left: 10px; color: #00ffff; font-size: 16px; background-color: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px; text-shadow: 0 0 5px #00ffff; }
+  #quantum-dashboard { position: absolute; top: 50px; left: 10px; color: #00ffff; font-size: 14px; background-color: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px; text-shadow: 0 0 5px #00ffff; }
+  #quantum-metrics {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    color: #00ffff;
+    font-size: 14px;
+    background: linear-gradient(45deg, rgba(0,0,0,0.8), rgba(0,40,40,0.8));
+    box-shadow: 0 0 20px #00ffff33;
+    border: 2px solid #00ffff44;
+    padding: 15px;
+    border-radius: 8px;
+    text-shadow: 0 0 5px #00ffff;
+    transform: translateY(-50%);
+  }
+  .quantum-alert {
+    position: absolute;
+    padding: 10px;
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    border-radius: 5px;
+    pointer-events: none;
+    transition: opacity 0.5s;
+    animation: glow 2s infinite alternate;
+  }
+  @keyframes glow {
+    from { box-shadow: 0 0 10px #00ffff; }
+    to { box-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff; }
+  }
+  #performance-stats {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #00ffff;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-shadow: 0 0 5px #00ffff;
+  }
+  canvas { filter: blur(0.5px) brightness(1.2) contrast(1.1); }
+</style>
+</head>
+<body>
+<div id="container"></div>
+<div id="loading">Initializing Quantum Hyper-Advanced 3D Desktop...</div>
+<div id="info">Navigate using quantum entanglement controls. Manipulate objects with thought interfaces.</div>
+<div id="evolution-info">Evolution Stage: Quantum Singularity<br>Self-Awareness Level: Omniscient<br>Complexity: Beyond Comprehension</div>
+<canvas id="circuit-diagram"></canvas>
+<canvas id="neural-network"></canvas>
+<div id="virtual-assistant">Greetings, cosmic traveler. How may I assist you in this quantum realm?</div>
+<div id="quantum-dashboard">
+  Quantum Coherence: 99.9%<br>
+  Entanglement Density: 10^23 qubits/cm³<br>
+  Multiversal Connections: ∞<br>
+  Reality Distortion: Active
+</div>
+<div id="quantum-metrics"></div>
+
+<script>
+let scene, camera, renderer, composer, controls, world, clock;
+let fileManager, windowManager, taskbar;
+let quantumParticles = [];
+let physicsBodies = [];
+let multiversalPortals = [];
+let neuralProcessor = null;
+let evolutionStage = 0;
+let quantumMetrics;
+let lastUpdateTime = Date.now();
+let complexityScore = 0;
+let gpuKernels; // Add this line
+const MAX_EVOLUTION_STAGE = 10;
+
+function createQuantumMetrics() {
+  const metricsDiv = document.getElementById('quantum-metrics');
+  return metricsDiv;
+}
+
+function calculateComplexity() {
+  let complexity = 0;
+  
+  // Add null checks for all arrays and objects
+  if (Array.isArray(quantumParticles)) {
+    complexity += quantumParticles.length * 0.5;
+  }
+  
+  if (Array.isArray(physicsBodies)) {
+    complexity += physicsBodies.length * 2;
+  }
+  
+  if (Array.isArray(multiversalPortals)) {
+    complexity += multiversalPortals.length * 5;
+  }
+  
+  if (typeof evolutionStage === 'number') {
+    complexity += evolutionStage * 10;
+  }
+  
+  if (neuralProcessor && neuralProcessor.hiddenLayers) {
+    // Ensure hiddenLayers is an array and has reduce method
+    if (Array.isArray(neuralProcessor.hiddenLayers)) {
+      complexity += neuralProcessor.hiddenLayers.reduce((acc, layer) => acc + layer, 0);
+    }
+  }
+  
+  return complexity;
+}
+
+function evolveSystem() {
+  evolutionStage++;
+  console.log(`System evolved to stage ${evolutionStage}`);
+  
+  const particleCount = Math.min(20 * evolutionStage, 200);
+  while (quantumParticles.length < particleCount) {
+    const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const particleMaterial = new THREE.MeshStandardMaterial({
+      color: 0x00ffff,
+      emissive: 0x006666,
+      transparent: true,
+      opacity: 0.6
+    });
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+    particle.position.set(
+      Math.random() * 40 - 20,
+      Math.random() * 20 + 5,
+      Math.random() * 40 - 20
+    );
+    scene.add(particle);
+    quantumParticles.push(particle);
+  }
+  
+  neuralProcessor = new brain.NeuralNetwork({
+    hiddenLayers: [
+      10 + evolutionStage * 2,
+      8 + evolutionStage,
+      6 + Math.floor(evolutionStage/2)
+    ]
+  });
+  
+  if (realityDistortionField) {
+    realityDistortionField.material.uniforms.intensity.value += 0.1;
+  }
+  
+  if (evolutionStage % 2 === 0 && multiversalPortals.length < 10) {
+    const portal = createMultiversalPortal();
+    multiversalPortals.push(portal);
+  }
+}
+
+function createMultiversalPortals() {
+  for(let i = 0; i < 5; i++) {
+    const portal = createMultiversalPortal();
+    multiversalPortals.push(portal);
+  }
+
+  for(let i = 0; i < 100; i++) {
+    const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const particleMaterial = new THREE.MeshStandardMaterial({
+      color: 0x00ffff,
+      emissive: 0x006666,
+      transparent: true,
+      opacity: 0.6
+    });
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+    
+    particle.position.set(
+      Math.random() * 40 - 20,
+      Math.random() * 20 + 5,
+      Math.random() * 40 - 20
+    );
+    
+    scene.add(particle);
+    quantumParticles.push(particle);
+  }
+
+  const portalLight = new THREE.PointLight(0x00ffff, 2, 10);
+  portalLight.position.set(0, 10, 0);
+  scene.add(portalLight);
+}
+
+function createQuantumEnvironment() {
+  const groundGeometry = new THREE.PlaneGeometry(100, 100);
+  const groundMaterial = new THREE.MeshStandardMaterial({
+    color: 0x001a33,
+    metalness: 0.8,
+    roughness: 0.1,
+    emissive: 0x001133
+  });
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  const groundBody = new CANNON.Body({
+    mass: 0,
+    shape: new CANNON.Plane()
+  });
+  groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+  world.addBody(groundBody);
+}
+
+function createQuantumAIFileManager() {
+  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    metalness: 0.9,
+    roughness: 0.1,
+    emissive: 0x006666
+  });
+  const fileManager = new THREE.Mesh(geometry, material);
+  fileManager.position.set(-3, 1, 0);
+  fileManager.castShadow = true;
+  scene.add(fileManager);
+
+  const shape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
+  const body = new CANNON.Body({ mass: 1 });
+  body.addShape(shape);
+  body.position.set(-3, 1, 0);
+  world.addBody(body);
+
+  physicsBodies.push({ mesh: fileManager, body: body });
+}
+
+function createQuantum3DWindowManager() {
+  const geometry = new THREE.TorusGeometry(1, 0.3, 16, 32);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    metalness: 0.9,
+    roughness: 0.1,
+    emissive: 0x006666
+  });
+  const windowManager = new THREE.Mesh(geometry, material);
+  windowManager.position.set(3, 2, 0);
+  windowManager.castShadow = true;
+  scene.add(windowManager);
+
+  const shape = new CANNON.Sphere(1);
+  const body = new CANNON.Body({ mass: 1 });
+  body.addShape(shape);
+  body.position.set(3, 2, 0);
+  world.addBody(body);
+
+  physicsBodies.push({ mesh: windowManager, body: body });
+}
+
+function createQuantumTaskbar() {
+  const geometry = new THREE.CylinderGeometry(0.2, 0.2, 4, 32);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    metalness: 0.9,
+    roughness: 0.1,
+    emissive: 0x006666
+  });
+  const taskbar = new THREE.Mesh(geometry, material);
+  taskbar.position.set(0, 1, -3);
+  taskbar.castShadow = true;
+  scene.add(taskbar);
+
+  const shape = new CANNON.Cylinder(0.2, 0.2, 4, 32);
+  const body = new CANNON.Body({ mass: 1 });
+  body.addShape(shape);
+  body.position.set(0, 1, -3);
+  world.addBody(body);
+
+  physicsBodies.push({ mesh: taskbar, body: body });
+}
+
+function createQuantumCircuit() {
+  const canvas = document.getElementById('circuit-diagram');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 200;
+  canvas.height = 150;
+  
+  ctx.strokeStyle = '#00ffff';
+  ctx.lineWidth = 2;
+  
+  ctx.beginPath();
+  for(let i = 0; i < 5; i++) {
+    ctx.moveTo(20 + i * 40, 20);
+    ctx.lineTo(20 + i * 40, 130);
+    ctx.moveTo(20, 20 + i * 30);
+    ctx.lineTo(180, 20 + i * 30);
+  }
+  ctx.stroke();
+}
+
+function createNeuralNetwork() {
+  const canvas = document.getElementById('neural-network');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 200;
+  canvas.height = 150;
+  
+  ctx.strokeStyle = '#00ffff';
+  ctx.fillStyle = '#00ffff';
+  
+  const layers = [4, 6, 6, 4];
+  const nodePositions = [];
+  
+  layers.forEach((nodes, layerIndex) => {
+    const x = 20 + (layerIndex * 50);
+    nodePositions[layerIndex] = [];
+    
+    for(let i = 0; i < nodes; i++) {
+      const y = 20 + (i * 30);
+      nodePositions[layerIndex][i] = {x, y};
+      
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      if(layerIndex > 0) {
+        const prevLayer = nodePositions[layerIndex - 1];
+        prevLayer.forEach(prevNode => {
+          ctx.beginPath();
+          ctx.moveTo(prevNode.x, prevNode.y);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+        });
+      }
+    }
+  });
+}
+
+function createMultiversalPortal() {
+  const geometry = new THREE.TorusKnotGeometry(2, 0.5, 100, 16);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ffff,
+    metalness: 0.9,
+    roughness: 0.1,
+    emissive: 0x006666,
+    transparent: true,
+    opacity: 0.7
+  });
+  const portal = new THREE.Mesh(geometry, material);
+  portal.position.set(
+    Math.random() * 40 - 20,
+    Math.random() * 20 + 5,
+    Math.random() * 40 - 20
+  );
+  scene.add(portal);
+  return portal;
+}
+
+function createRealityDistortionField() {
+  const geometry = new THREE.IcosahedronGeometry(20, 2);
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      intensity: { value: 0.5 }
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      void main() {
+        vNormal = normal;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float time;
+      uniform float intensity;
+      varying vec3 vNormal;
+      void main() {
+        vec3 color = vec3(0.0, 1.0, 1.0) * intensity;
+        gl_FragColor = vec4(color * vNormal, 0.2);
+      }
+    `,
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+  realityDistortionField = new THREE.Mesh(geometry, material);
+  scene.add(realityDistortionField);
+}
+
+function onQuantumEntanglement(event) {
+  console.log('Quantum entanglement detected:', event);
+}
+
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function createGPUKernels() {
+  if (!gpu) {
+    return null;
+  }
+
+  try {
+    const computeParticlePhysics = gpu.createKernel(function(positions, velocities, dt) {
+      const idx = this.thread.x;
+      return positions[idx] + velocities[idx] * dt;
+    }).setOutput([1000]); // Set a reasonable maximum size
+
+    return {
+      computeParticlePhysics
+    };
+  } catch (e) {
+    console.warn('GPU kernel creation failed:', e);
+    return null;
+  }
+}
+
+function createAdvancedQuantumEffects() {
+  // Create quantum tunneling effect
+  const tunnelGeometry = new THREE.TorusGeometry(30, 2, 30, 100);
+  const tunnelMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform float time;
+      uniform vec2 resolution;
+      varying vec2 vUv;
+      
+      void main() {
+        vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+        float t = time * 0.5;
+        vec3 color = vec3(0.0);
+        
+        for(float i = 0.0; i < 3.0; i++) {
+          p.x += 0.6 / (abs(p.y + sin(p.x + t + i * 2.0) * 0.3) * 8.0);
+          color[int(i)] = p.x * 0.3 + 0.6;
+        }
+        
+        gl_FragColor = vec4(color * vec3(0.0, 1.0, 1.0), 0.5);
+      }
+    `,
+    transparent: true,
+    side: THREE.DoubleSide
+  });
+  
+  const tunnel = new THREE.Mesh(tunnelGeometry, tunnelMaterial);
+  tunnel.rotation.x = Math.PI / 2;
+  scene.add(tunnel);
+  
+  // Add quantum fluctuation field
+  const fluctuationGeometry = new THREE.IcosahedronGeometry(40, 4);
+  const fluctuationMaterial = new THREE.MeshPhongMaterial({
+    color: 0x00ffff,
+    transparent: true,
+    opacity: 0.2,
+    wireframe: true
+  });
+  
+  const fluctuationField = new THREE.Mesh(fluctuationGeometry, fluctuationMaterial);
+  scene.add(fluctuationField);
+  
+  // Animate fluctuation field
+  gsap.to(fluctuationField.rotation, {
+    x: Math.PI * 2,
+    y: Math.PI * 2,
+    duration: 100,
+    repeat: -1,
+    ease: "none"
+  });
+  
+  return { tunnel, fluctuationField };
+}
+
+function updateQuantumEffects(effects, time) {
+  if (effects.tunnel) {
+    effects.tunnel.material.uniforms.time.value = time;
+    effects.tunnel.rotation.z += 0.001;
+  }
+  
+  if (effects.fluctuationField) {
+    effects.fluctuationField.scale.x = 1 + Math.sin(time * 0.5) * 0.1;
+    effects.fluctuationField.scale.y = 1 + Math.cos(time * 0.4) * 0.1;
+    effects.fluctuationField.scale.z = 1 + Math.sin(time * 0.3) * 0.1;
+  }
+}
+
+// Modify the init function to add new effects
+function init() {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.getElementById('container').appendChild(renderer.domElement);
+
+  clock = new THREE.Clock();
+
+  world = new CANNON.World();
+  world.gravity.set(0, -9.82, 0);
+  world.broadphase = new CANNON.SAPBroadphase(world);
+  world.solver.iterations = 20;
+  world.solver.tolerance = 0.001;
+
+  camera.position.set(0, 5, 10);
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 0, 0);
+  controls.update();
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+
+  const ambientLight = new THREE.AmbientLight(0x00ffff, 0.5);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0x00ffff, 0.8);
+  directionalLight.position.set(5, 10, 7.5);
+  directionalLight.castShadow = true;
+  directionalLight.shadow.mapSize.width = 2048;
+  directionalLight.shadow.mapSize.height = 2048;
+  scene.add(directionalLight);
+
+  const renderScene = new THREE.RenderPass(scene, camera);
+
+  composer = new THREE.EffectComposer(renderer);
+  composer.addPass(renderScene);
+
+  // Add FXAA anti-aliasing
+  const fxaaPass = new THREE.ShaderPass(THREE.FXAAShader);
+  fxaaPass.uniforms.resolution.value.set(1 / window.innerWidth, 1 / window.innerHeight);
+  composer.addPass(fxaaPass);
+
+  // Add bloom effect
+  const bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5, 0.4, 0.85
+  );
+  bloomPass.threshold = 0.2;
+  bloomPass.strength = 1.5;
+  bloomPass.radius = 0.8;
+  composer.addPass(bloomPass);
+
+  // Add bokeh effect
+  const bokehPass = new THREE.BokehPass(scene, camera, {
+    focus: 1.0,
+    aperture: 0.025,
+    maxblur: 0.01
+  });
+  composer.addPass(bokehPass);
+
+  // Add a final render pass
+  const finalPass = new THREE.ShaderPass(THREE.CopyShader);
+  finalPass.renderToScreen = true;
+  composer.addPass(finalPass);
+
+  const quantumEffects = createAdvancedQuantumEffects();
+  
+  createQuantumEnvironment();
+  createQuantumAIFileManager();
+  createQuantum3DWindowManager();
+  createQuantumTaskbar();
+  createQuantumCircuit();
+  createNeuralNetwork();
+  createMultiversalPortals();
+  createRealityDistortionField();
+
+  window.addEventListener('resize', onWindowResize, false);
+  window.addEventListener('quantumentanglement', onQuantumEntanglement, false);
+
+  document.getElementById('loading').style.display = 'none';
+
+  try {
+    if (typeof GPU !== 'undefined') {
+      gpu = new GPU(); // Remove .GPU
+    } else {
+      console.warn('GPU.js not available, using CPU fallback');
+      gpu = {
+        createKernel: function(fn) {
+          return function() {
+            return fn.apply(this, arguments);
+          };
+        }
+      };
+    }
+    
+    gpuKernels = createGPUKernels();
+    if (!gpuKernels) {
+      throw new Error('GPU kernels creation failed');
+    }
+  } catch (e) {
+    console.warn('GPU initialization failed, using CPU fallback:', e);
+    gpuKernels = {
+      computeParticlePhysics: function(positions, velocities, dt) {
+        return positions.map((pos, idx) => ({
+          x: pos[0] + velocities[idx][0] * dt,
+          y: pos[1] + velocities[idx][1] * dt,
+          z: pos[2] + velocities[idx][2] * dt
+        }));
+      }
+    };
+  }
+
+  quantumMetrics = createQuantumMetrics();
+
+  neuralProcessor = {
+    hiddenLayers: [10, 8, 6]
+  };
+
+  evolveSystem();
+
+  animate();
+
+  // Add the update of quantum effects in the animation loop
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const delta = clock.getDelta();
+    const elapsedTime = clock.getElapsedTime();
+
+    for (let i = 0; i < physicsBodies.length; i++) {
+      if (physicsBodies[i] && physicsBodies[i].body && physicsBodies[i].mesh) {
+        physicsBodies[i].mesh.position.copy(physicsBodies[i].body.position);
+        physicsBodies[i].mesh.quaternion.copy(physicsBodies[i].body.quaternion);
+      }
+    }
+
+    world.step(1 / 60);
+
+    // Update particle physics with safe checks
+    if (quantumParticles.length > 0) {
+      if (gpuKernels && gpuKernels.computeParticlePhysics) {
+        try {
+          const positions = quantumParticles.map(p => [p.position.x, p.position.y, p.position.z]);
+          const velocities = quantumParticles.map(() => [0.01, 0.01, 0.01]);
+          
+          const newPositions = gpuKernels.computeParticlePhysics(positions, velocities, delta);
+          
+          quantumParticles.forEach((particle, i) => {
+            if (newPositions[i]) {
+              particle.position.set(
+                newPositions[i][0],
+                newPositions[i][1],
+                newPositions[i][2]
+              );
+            }
+          });
+        } catch (e) {
+          console.warn('GPU computation failed, falling back to CPU:', e);
+          updateParticlesCPU(quantumParticles, elapsedTime);
+        }
+      } else {
+        updateParticlesCPU(quantumParticles, elapsedTime);
+      }
+    }
+
+    for (let portal of multiversalPortals) {
+      portal.rotation.x += 0.01;
+      portal.rotation.y += 0.015;
+      portal.scale.setScalar(1 + Math.sin(elapsedTime * 2) * 0.1);
+    }
+
+    if (realityDistortionField) {
+      realityDistortionField.material.uniforms.time.value = elapsedTime;
+      realityDistortionField.material.uniforms.intensity.value = 0.5 + Math.sin(elapsedTime) * 0.2;
+    }
+
+    if (elapsedTime % 1 < 0.1) {
+      createQuantumCircuit();
+      createNeuralNetwork();
+    }
+
+    complexityScore = calculateComplexity();
+    if (quantumMetrics) {
+      quantumMetrics.innerHTML = `
+        Quantum Complexity: ${complexityScore.toFixed(2)}<br>
+        Evolution Stage: ${evolutionStage}<br>
+        Active Particles: ${quantumParticles.length}<br>
+        Physics Bodies: ${physicsBodies.length}<br>
+        Frame Rate: ${(1000 / (Date.now() - lastUpdateTime)).toFixed(1)} FPS
+      `;
+    }
+
+    if (complexityScore > evolutionStage * 100 && evolutionStage < MAX_EVOLUTION_STAGE) {
+      evolveSystem();
+    }
+    
+    lastUpdateTime = Date.now();
+
+    TWEEN.update();
+
+    controls.update();
+    
+    updateQuantumEffects(quantumEffects, elapsedTime);
+
+    composer.render();
+  }
+}
+
+// Enhance particle physics
+function updateParticlesCPU(particles, elapsedTime) {
+  const simplex = new SimplexNoise();
+  
+  particles.forEach((particle, index) => {
+    const noise = simplex.noise3D(
+      particle.position.x * 0.05,
+      particle.position.y * 0.05,
+      elapsedTime * 0.5
+    );
+    
+    particle.position.y += Math.sin(elapsedTime * 2 + particle.position.x) * 0.01 + noise * 0.02;
+    particle.position.x += Math.cos(elapsedTime * 2 + particle.position.z) * 0.01 + noise * 0.02;
+    particle.position.z += Math.sin(elapsedTime * 2 + particle.position.y) * 0.01 + noise * 0.02;
+    
+    particle.scale.setScalar(1 + noise * 0.2);
+    particle.material.emissiveIntensity = 0.5 + noise * 0.5;
+  });
+}
+
+init();
+</script>
+</body>
+</html>
